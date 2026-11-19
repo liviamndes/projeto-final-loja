@@ -1,0 +1,56 @@
+# Sobe tudo:            docker compose up --build
+# Derrubar o Estoque:   docker compose stop estoque     (volta com: docker compose start estoque)
+# Ver logs de um:       docker compose logs -f pedidos
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports: ["1883:1883"]
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-data:/mosquitto/data
+
+  clientes:
+    build: ./clientes
+    ports: ["3001:3001"]
+    environment:
+      PORT: 3001
+      DATA_DIR: /app/data
+    volumes: ["clientes-data:/app/data"]
+
+  estoque:
+    build: ./estoque
+    ports: ["3002:3002"]
+    environment:
+      PORT: 3002
+      DATA_DIR: /app/data
+    volumes: ["estoque-data:/app/data"]
+
+  pedidos:
+    build: ./pedidos
+    ports: ["3003:3003"]
+    environment:
+      PORT: 3003
+      DATA_DIR: /app/data
+      CLIENTES_URL: http://clientes:3001
+      ESTOQUE_URL: http://estoque:3002
+      MQTT_URL: mqtt://mosquitto:1883
+      TIMEOUT_MS: 2000
+    volumes: ["pedidos-data:/app/data"]
+    depends_on: [mosquitto]   # só o broker; Clientes/Estoque PODEM estar fora (é o objetivo da demo)
+
+  notificacoes:
+    build: ./notificacoes
+    ports: ["3004:3004"]
+    environment:
+      PORT: 3004
+      DATA_DIR: /app/data
+      MQTT_URL: mqtt://mosquitto:1883
+    volumes: ["notificacoes-data:/app/data"]
+    depends_on: [mosquitto]
+
+volumes:
+  mosquitto-data:
+  clientes-data:
+  estoque-data:
+  pedidos-data:
+  notificacoes-data:

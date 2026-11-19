@@ -1,0 +1,6 @@
+[
+  { "id": 1, "nome": "Camiseta Básica", "descricao": "Algodão, tamanho M", "preco": 49.9, "quantidade": 20 },
+  { "id": 2, "nome": "Caneca", "descricao": "Cerâmica 300ml", "preco": 29.9, "quantidade": 10 },
+  { "id": 3, "nome": "Mochila", "descricao": "Notebook até 15 pol.", "preco": 129.9, "quantidade": 5 },
+  { "id": 4, "nome": "Fone de Ouvido", "descricao": "Sem estoque (para testar erro)", "preco": 89.9, "quantidade": 0 }
+]
