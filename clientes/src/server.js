@@ -98,16 +98,36 @@ app.put('/clientes/:id', (req, res) => {
   }
   
   const emailJaExiste = clientes.some((c) => c.email == emailLimpo && c.id !==clienteId);
+  const emailJaExiste = clientes.some((c) => c.email == emailLimpo && c.id !==clienteId && c.ativo !== false);
   if(emailJaExiste){
     throw new ApiError(409, 'EMAIL_DUPLICADO', 'Esse email já está cadastrado');
   }
 
   const clienteAtualizado = {id: clienteId, nome: nomeLimpo, email: emailLimpo};
+  const clienteAtualizado = {...clientes[index], id: clienteId, nome: nomeLimpo, email: emailLimpo};
   clientes[index] = clienteAtualizado; 
   db.salvar(clientes)
   return res.status(200).json(clienteAtualizado); 
 }); 
 
+app.delete('/clientes/:id', (req, res) => {
+  const clienteId = Number(req.params.id);
+  if(Number.isNaN(clienteId)){
+    throw new ApiError(400, 'ID_INVALIDO', 'O id do cliente deve ser um numero')
+  }
+  const clientes = db.ler();
+
+  const index = clientes.findIndex(
+    (c) => c.id === clienteId && c.ativo !== false
+  ); 
+  if (index === -1){
+    throw new ApiError(404, 'CLIENTE_NAO_ENCONTRADO', 'Cliente não encontrado');
+  }
+  clientes[index].ativo = false; 
+  clientes[index].deletadoEm = new Date().toISOString();
+  db.salvar(clientes);
+  return res.status(204).send(); 
+});
 
 app.use(errorHandler);
 app.listen(PORT, () => log('info', `Serviço Clientes na porta ${PORT}`));
