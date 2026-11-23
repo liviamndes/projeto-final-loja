@@ -3,7 +3,6 @@ const path = require('path');
 const { criarDb } = require('./lib/db');
 const { ApiError, errorHandler } = require('./lib/erro');
 const { criarLogger } = require('./lib/logger');
-const { type } = require('os');
 
 const PORT = process.env.PORT || 3001;
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
@@ -18,14 +17,14 @@ app.use(middleware);
 app.get('/health', (req, res) => res.json({ servico: 'clientes', status: 'ok' }));
 
 app.get('/clientes/:id', (req, res) => {
-  const cliente = db.ler().find((c) => c.id === Number(req.params.id));
+  const cliente = db.ler().find((c) => c.id === Number(req.params.id) && c.ativo != false);
   if (!cliente) throw new ApiError(404, 'CLIENTE_NAO_ENCONTRADO', 'Cliente não encontrado');
   res.json(cliente);
 });
 
 app.get('/clientes', (req, res) => {
-  const clientes = db.ler();
-  res.json(cliente);
+  const clientesAtivos = db.ler().filter((c) => c.ativo !== false);
+  res.json(clientesAtivos);
 });
 
 app.post('/clientes', (req, res) => {
@@ -51,7 +50,7 @@ app.post('/clientes', (req, res) => {
 
   const clientes = db.ler(); 
 
-  const emailJaExiste = clientes.some((c) => c.email == emailLimpo)
+  const emailJaExiste = clientes.some((c) => c.email == emailLimpo && c.ativo !== false)
   if(emailJaExiste){
     throw new ApiError(409, 'EMAIL_DUPLICADO', 'Esse email já está cadastrado');
   }
@@ -60,7 +59,8 @@ app.post('/clientes', (req, res) => {
   const novoCliente = {
     id: novoId,
     nome: nomeLimpo,
-    email: emailLimpo
+    email: emailLimpo,
+    ativo: true
   };
   clientes.push(novoCliente);
   db.salvar(clientes)
@@ -92,7 +92,7 @@ app.put('/clientes/:id', (req, res) => {
 
   const clientes = db.ler(); 
 
-  const index = clientes.findIndex((c)=> c.id === clienteId);
+  const index = clientes.findIndex((c)=> c.id === clienteId && c.ativo !== false);
   if (index === -1){
     throw new ApiError(404, 'CLIENTE_NAO_ENCONTRADO', 'Cliente não encontrado');
   }
@@ -108,7 +108,6 @@ app.put('/clientes/:id', (req, res) => {
   return res.status(200).json(clienteAtualizado); 
 }); 
 
-// TODO (Pessoa 1): GET /clientes, POST /clientes, PUT/DELETE opcionais — ver docs/CONTRATOS.md
 
 app.use(errorHandler);
 app.listen(PORT, () => log('info', `Serviço Clientes na porta ${PORT}`));
