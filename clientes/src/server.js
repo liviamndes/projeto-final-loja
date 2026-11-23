@@ -97,13 +97,11 @@ app.put('/clientes/:id', (req, res) => {
     throw new ApiError(404, 'CLIENTE_NAO_ENCONTRADO', 'Cliente não encontrado');
   }
   
-  const emailJaExiste = clientes.some((c) => c.email == emailLimpo && c.id !==clienteId);
   const emailJaExiste = clientes.some((c) => c.email == emailLimpo && c.id !==clienteId && c.ativo !== false);
   if(emailJaExiste){
     throw new ApiError(409, 'EMAIL_DUPLICADO', 'Esse email já está cadastrado');
   }
 
-  const clienteAtualizado = {id: clienteId, nome: nomeLimpo, email: emailLimpo};
   const clienteAtualizado = {...clientes[index], id: clienteId, nome: nomeLimpo, email: emailLimpo};
   clientes[index] = clienteAtualizado; 
   db.salvar(clientes)
