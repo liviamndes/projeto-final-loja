@@ -1,4 +1,4 @@
-// Padrão de erro do projeto: { erro: "CODIGO_EM_MAIUSCULO", mensagem: "texto legível" }
+// produto não encontrado, estoque insuficiente e dados inválidos
 class ApiError extends Error {
   constructor(status, codigo, mensagem) {
     super(mensagem);
@@ -7,13 +7,13 @@ class ApiError extends Error {
   }
 }
 
-// Middleware final do Express: converte qualquer erro em JSON padronizado.
 function errorHandler(err, req, res, next) {
-  if (err instanceof ApiError) {
-    return res.status(err.status).json({ erro: err.codigo, mensagem: err.message });
+  if(err instanceof ApiError) {
+    res.status(err.status).json({erro: err.codigo, mensagem: err.message});
   }
-  console.error(err);
-  res.status(500).json({ erro: 'ERRO_INTERNO', mensagem: 'Erro interno do serviço' });
+  else {
+    console.error(err);
+    res.status(500).json({erro: 'FALHA_INESPERADA', mensagem: 'Não foi possível concluir a operação'});
+  }
 }
-
-module.exports = { ApiError, errorHandler };
+module.exports = {ApiError, errorHandler};
