@@ -38,11 +38,22 @@ app.post('/produtos', (req, res) => {
   }
   else {
     throw new ApiError(400, 'DADOS_INVALIDOS', 'Dados inválidos');
-  }
+}
 })
 
-// TODO (Pessoa 2): GET /produtos, POST /produtos,
-//   POST /produtos/:id/baixa      (409 ESTOQUE_INSUFICIENTE se faltar)
+app.post('/produtos/:id/baixa', (req, res) => {
+  const estoque = db.ler();
+  const produto = estoque.find((p) => p.id === Number(req.params.id));
+
+  if(!produto) throw new ApiError(404, 'PRODUTO_NAO_ENCONTRADO', 'Produto não encontrado');
+  if(!(req.body.quantidade > 0)) throw new ApiError(400, 'DADOS_INVALIDOS', 'Dados inválidos');
+  if(req.body.quantidade > produto.quantidade) throw new ApiError(409, 'ESTOQUE_INSUFICIENTE', 'Estoque insuficiente');
+
+  produto.quantidade = produto.quantidade - req.body.quantidade;
+  db.salvar(estoque);
+  res.json(produto);
+})
+
 //   POST /produtos/:id/reposicao  (usada por Pedidos para desfazer baixa)
 // Ver docs/CONTRATOS.md
 
